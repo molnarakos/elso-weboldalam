@@ -1,13 +1,16 @@
 const express = require('express');
 const { MongoClient } = require('mongodb');
 const app = express();
+const port = process.env.PORT || 3000;
 
-// JAVÍTOTT VERZIÓ - a szerver akkor is elindul, ha nincs MongoDB
 const mongoUrl = process.env.MONGODB_URL || 'mongodb://localhost:27017';
+const dbName = 'elso-weboldalam';
+let db;
+let uzenetekCollection;
+let jatekAllapotCollection;
 
-app.listen(port, '0.0.0.0', () => {
-  console.log(`Az oldal fut a porton: ${port}`);
-});
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 
 // SZERVER INDÍTÁSA ELŐSZÖR
 app.listen(port, '0.0.0.0', () => {
@@ -26,9 +29,6 @@ MongoClient.connect(mongoUrl)
     console.error('MongoDB kapcsolodasi hiba:', error);
     console.log('Az oldal MongoDB nélkül fut.');
   });
-
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
 
 function getStyle() {
   return `
