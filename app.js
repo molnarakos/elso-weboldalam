@@ -1,14 +1,15 @@
 const express = require('express');
 const { MongoClient } = require('mongodb');
 const app = express();
-const port = 3000;
 
-const mongoUrl = 'mongodb://localhost:27017';
-const dbName = 'elso-weboldalam';
-let db;
-let uzenetekCollection;
-let jatekAllapotCollection;
+// JAVÍTOTT VERZIÓ - a szerver akkor is elindul, ha nincs MongoDB
+const port = process.env.PORT || 3000;
 
+app.listen(port, '0.0.0.0', () => {
+  console.log(`Az oldal fut a porton: ${port}`);
+});
+
+// MongoDB kapcsolat külön (nem blokkolja a szervert)
 MongoClient.connect(mongoUrl)
   .then(client => {
     console.log('Sikeresen csatlakoztunk a MongoDB-hez!');
@@ -18,6 +19,7 @@ MongoClient.connect(mongoUrl)
   })
   .catch(error => {
     console.error('MongoDB kapcsolodasi hiba:', error);
+    console.log('Az oldal MongoDB nélkül fut, néhány funkció nem elérhető.');
   });
 
 app.use(express.urlencoded({ extended: true }));
