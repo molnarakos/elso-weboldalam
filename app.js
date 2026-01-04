@@ -392,7 +392,7 @@ app.get('/tengerimalac-jatek', async (req, res) => {
         function nappali() {
           document.getElementById('jatek-tartalom').innerHTML = 
             '<p>A nappaliban talalkozol a Jatek Manoval.</p>' +
-            '<button class="gomb" onclick="leutJatekMano()">Leut mert felix tole</button>' +
+            '<button class="gomb" onclick="leutJatekMano()">Leutod mert felsz tole</button>' +
             '<button class="gomb" onclick="meghallgatJatekMano()">Meghallgatom</button>';
         }
 
