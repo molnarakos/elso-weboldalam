@@ -1,8 +1,9 @@
 const express = require('express');
 const { MongoClient } = require('mongodb');
 const app = express();
-const port = process.env.PORT || 3000;
 
+// JAVÍTOTT VERZIÓ - a szerver akkor is elindul, ha nincs MongoDB
+const port = process.env.PORT || 3000;
 const mongoUrl = process.env.MONGODB_URL || 'mongodb://localhost:27017';
 const dbName = 'elso-weboldalam';
 let db;
@@ -26,8 +27,8 @@ MongoClient.connect(mongoUrl)
     jatekAllapotCollection = db.collection('jatek_allapot');
   })
   .catch(error => {
-    console.error('MongoDB kapcsolodasi hiba:', error);
-    console.log('Az oldal MongoDB nélkül fut.');
+    console.error('MongoDB kapcsolódási hiba:', error);
+    console.log('Az oldal MongoDB nélkül fut, néhány funkció nem elérhető.');
   });
 
 function getStyle() {
@@ -155,10 +156,10 @@ app.post('/uj-uzenet', async (req, res) => {
       datum: new Date()
     };
     await uzenetekCollection.insertOne(ujUzenet);
-    console.log('Uj uzenet mentve!');
+    console.log('Új üzenet mentve!');
     res.redirect('/uzenofal');
   } catch (error) {
-    res.send('Hiba tortent!');
+    res.send('Hiba történt!');
   }
 });
 
@@ -195,12 +196,12 @@ app.get('/tengerimalac-jatek', async (req, res) => {
         <h1>🐹 Tengerimalac Kaland</h1>
         ${allapot.jatekosNev ? '<p><strong>Játékos:</strong> ' + allapot.jatekosNev + '</p>' : ''}
         <div class="finish-lista">
-          <strong>Feloldott Finishek:</strong> ${allapot.finishek.join(', ') || 'Meg nincs'}<br>
-          <strong>Gyozelem Pontok:</strong> ${allapot.gyozelemPontok}/10
-          ${allapot.gyozelemPontok >= 10 ? '<br><span class="gratula">🎉 KIVITTED A JATEKOT! 🎉</span>' : ''}
+          <strong>Feloldott Finishek:</strong> ${allapot.finishek.join(', ') || 'Még nincs'}<br>
+          <strong>Győzelem Pontok:</strong> ${allapot.gyozelemPontok}/10
+          ${allapot.gyozelemPontok >= 10 ? '<br><span class="gratula">🎉 KIVITTED A JÁTÉKOT! 🎉</span>' : ''}
         </div>
         <div id="jatek-tartalom">
-          ${allapot.jatekosNev ? '<p>Egy kertes haz nappalijaban egy ketrecben elsz tengerimalackent.</p><button class="gomb" onclick="ketrec()">Jatek Inditasa</button>' : '<p>Egy kertes haz nappalijaban egy ketrecben elsz tengerimalackent.</p><p><strong>Add meg a neved:</strong></p><form onsubmit="event.preventDefault(); startJatek();"><input type="text" id="nev-input" placeholder="A neved..." required><button type="submit" class="gomb">Jatek Inditasa</button></form>'}
+          ${allapot.jatekosNev ? '<p>Egy kertes ház nappalijában egy ketrecben élsz tengerimalacként.</p><button class="gomb" onclick="ketrec()">Játék Indítása</button>' : '<p>Egy kertes ház nappalijában egy ketrecben élsz tengerimalacként.</p><p><strong>Add meg a neved:</strong></p><form onsubmit="event.preventDefault(); startJatek();"><input type="text" id="nev-input" placeholder="A neved..." required><button type="submit" class="gomb">Játék Indítása</button></form>'}
         </div>
       </div>
       <script>
@@ -223,18 +224,18 @@ app.get('/tengerimalac-jatek', async (req, res) => {
 
         function ketrec() {
           document.getElementById('jatek-tartalom').innerHTML = 
-            '<p>Szia ' + (jatekosNev || 'Játékos') + '! A kisfiu aki a gazdad nyitva hagyta a ketrecet etetes kozben veletlenul.</p>' +
+            '<p>Szia ' + (jatekosNev || 'Játékos') + '! A kisfiú aki a gazdád nyitva hagyta a ketrecet etetés közben véletlenül.</p>' +
             '<button class="gomb" onclick="bentMaradsz()">Bent maradok</button>' +
             '<button class="gomb" onclick="valaszt(\\'nappali\\')">Nappaliba megyek</button>' +
-            '<button class="gomb" onclick="valaszt(\\'garazs\\')">Garazsba megyek</button>' +
+            '<button class="gomb" onclick="valaszt(\\'garazs\\')">Garázsba megyek</button>' +
             '<button class="gomb" onclick="valaszt(\\'wc\\')">WC-be megyek</button>' +
             '<button class="gomb" onclick="valaszt(\\'lift\\')">Liftbe megyek</button>';
         }
 
         function bentMaradsz() {
           document.getElementById('jatek-tartalom').innerHTML = 
-            '<p class="vege">VEGE! Osszeverekedtel egy masik malaccal az uborkán!</p>' +
-            '<button class="gomb" onclick="ujJatek()">Uj Jatek</button>';
+            '<p class="vege">VÉGE! Összeverekedtél egy másik malaccal az uborkán!</p>' +
+            '<button class="gomb" onclick="ujJatek()">Új Játék</button>';
         }
 
         function valaszt(hely) {
@@ -254,94 +255,94 @@ app.get('/tengerimalac-jatek', async (req, res) => {
 
         function garazs() {
           document.getElementById('jatek-tartalom').innerHTML = 
-            '<p>A garazsban vagy. Latsz kiszorodott golyokat es egy dolgot amit a gazda vett a boltban.</p>' +
-            '<button class="gomb" onclick="golyokEsz()">Megeszel a kiszorodott golyokat</button>' +
-            '<button class="gomb" onclick="boltosKajaEsz()">Megeszel a boltos kajat</button>';
+            '<p>A garázsban vagy. Látsz kiszóródott golyókat és egy dolgot amit a gazda vett a boltban.</p>' +
+            '<button class="gomb" onclick="golyokEsz()">Megeszel a kiszóródott golyókat</button>' +
+            '<button class="gomb" onclick="boltosKajaEsz()">Megeszel a boltos kaját</button>';
         }
 
         function golyokEsz() {
           document.getElementById('jatek-tartalom').innerHTML = 
-            '<p class="vege">VEGE! Megetted a patkanymerget!</p>' +
-            '<button class="gomb" onclick="ujJatek()">Uj Jatek</button>';
+            '<p class="vege">VÉGE! Megetted a patkánymérgét!</p>' +
+            '<button class="gomb" onclick="ujJatek()">Új Játék</button>';
         }
 
         async function boltosKajaEsz() {
-          await mentFinish('Auchanos malackaja');
+          await mentFinish('Auchanos malackája');
           document.getElementById('jatek-tartalom').innerHTML = 
-            '<p class="gratula">GRATULALUNK! Ez a kaja tengerimalac kaja volt ezert jollaktal!</p>' +
-            '<p>Feloldottad a finisht: <strong>Auchanos malackaja</strong></p>' +
-            '<button class="gomb" onclick="ujJatek()">Uj Jatek</button>';
+            '<p class="gratula">GRATULÁLUNK! Ez a kaja tengerimalac kaja volt ezért jóllaktál!</p>' +
+            '<p>Feloldottad a finisht: <strong>Auchanos malackája</strong></p>' +
+            '<button class="gomb" onclick="ujJatek()">Új Játék</button>';
         }
 
         function lift() {
           document.getElementById('jatek-tartalom').innerHTML = 
-            '<p>A liftben vagy. Hova mesz?</p>' +
+            '<p>A liftben vagy. Hova mész?</p>' +
             '<button class="gomb" onclick="elsoEmelet()">1. emelet</button>' +
-            '<button class="gomb" onclick="valaszt(\\'minel\\')">-1. szint</button>';
+            '<button class="gomb" onclick="valaszt(\\'minel\\')"">-1. szint</button>';
         }
 
         function elsoEmelet() {
           document.getElementById('jatek-tartalom').innerHTML = 
-            '<p>Az 1. emeleten vagy. Hova mesz?</p>' +
-            '<button class="gomb" onclick="valaszt(\\'kek_szoba\\')">Kek szoba</button>' +
-            '<button class="gomb" onclick="valaszt(\\'rozsaszin_szoba\\')">Rozsaszin szoba</button>';
+            '<p>Az 1. emeleten vagy. Hova mész?</p>' +
+            '<button class="gomb" onclick="valaszt(\\'kek_szoba\\')">Kék szoba</button>' +
+            '<button class="gomb" onclick="valaszt(\\'rozsaszin_szoba\\')">Rózsaszín szoba</button>';
         }
 
         function kekSzoba() {
           document.getElementById('jatek-tartalom').innerHTML = 
-            '<p>A kek szobaban vagy. Kimehetsz az erkelyre.</p>' +
-            '<button class="gomb" onclick="erkely()">Erkely</button>';
+            '<p>A kék szobában vagy. Kimehetsz az erkélyre.</p>' +
+            '<button class="gomb" onclick="erkely()">Erkély</button>';
         }
 
         function erkely() {
           document.getElementById('jatek-tartalom').innerHTML = 
-            '<p>Az erkelyen vagy. Hogyan mesz le a kertbe?</p>' +
-            '<button class="gomb" onclick="papirSarkany()">Papirsarkanyon</button>' +
-            '<button class="gomb" onclick="letra()">Letran</button>';
+            '<p>Az erkélyen vagy. Hogyan mész le a kertbe?</p>' +
+            '<button class="gomb" onclick="papirSarkany()">Papírsárkányon</button>' +
+            '<button class="gomb" onclick="letra()">Létrán</button>';
         }
 
         function papirSarkany() {
           document.getElementById('jatek-tartalom').innerHTML = 
-            '<p>Sikeresen landoltal a kertben!</p>' +
-            '<button class="gomb" onclick="valaszt(\\'kert\\')">Tovabb</button>';
+            '<p>Sikeresen landoltál a kertben!</p>' +
+            '<button class="gomb" onclick="valaszt(\\'kert\\')">Tovább</button>';
         }
 
         function letra() {
           document.getElementById('jatek-tartalom').innerHTML = 
-            '<p class="vege">VEGE! Lent nem volt rogzitve a letra! Legkozelebb nezd meg hova lepsz...</p>' +
-            '<button class="gomb" onclick="ujJatek()">Uj Jatek</button>';
+            '<p class="vege">VÉGE! Lent nem volt rögzítve a létra! Legközelebb nézd meg hova lépsz...</p>' +
+            '<button class="gomb" onclick="ujJatek()">Új Játék</button>';
         }
 
         function minusEgyesEmelet() {
           document.getElementById('jatek-tartalom').innerHTML = 
-            '<p>A -1. szinten vagy. Hallasz egy fura hangot es latsz illatos golyokat a foldon.</p>' +
-            '<button class="gomb" onclick="hangFele()">A hang fele megyek</button>' +
-            '<button class="gomb" onclick="illatosGolyok()">Megeszel az illatos golyokat</button>';
+            '<p>A -1. szinten vagy. Hallasz egy fura hangot és látsz illatos golyókat a földön.</p>' +
+            '<button class="gomb" onclick="hangFele()">A hang felé megyek</button>' +
+            '<button class="gomb" onclick="illatosGolyok()">Megeszel az illatos golyókat</button>';
         }
 
         function hangFele() {
           document.getElementById('jatek-tartalom').innerHTML = 
-            '<p class="vege">VEGE! Nem hallottad, hogy FURA hang? Egy patkany radugrott es megharapott!</p>' +
-            '<button class="gomb" onclick="ujJatek()">Uj Jatek</button>';
+            '<p class="vege">VÉGE! Nem hallottad, hogy FURA hang? Egy patkány ráugrott és megharapott!</p>' +
+            '<button class="gomb" onclick="ujJatek()">Új Játék</button>';
         }
 
         function illatosGolyok() {
           document.getElementById('jatek-tartalom').innerHTML = 
-            '<p class="vege">VEGE! Patkanymereg! Gondolkozz mielott cselekszel!</p>' +
-            '<button class="gomb" onclick="ujJatek()">Uj Jatek</button>';
+            '<p class="vege">VÉGE! Patkányméreg! Gondolkozz mielőtt cselekszel!</p>' +
+            '<button class="gomb" onclick="ujJatek()">Új Játék</button>';
         }
 
         function wc() {
           document.getElementById('jatek-tartalom').innerHTML = 
-            '<p>A WC-ben talalkozol a Kakimanoval, aki azt mondja: "Kovess!"</p>' +
-            '<button class="gomb" onclick="kovet()">Kovetem</button>' +
-            '<button class="gomb" onclick="tovabbMegy()">Tovabb megyek</button>';
+            '<p>A WC-ben találkozol a Kakimanóval, aki azt mondja: "Kövess!"</p>' +
+            '<button class="gomb" onclick="kovet()">Követem</button>' +
+            '<button class="gomb" onclick="tovabbMegy()">Tovább megyek</button>';
         }
 
         function kovet() {
           document.getElementById('jatek-tartalom').innerHTML = 
-            '<p class="vege">VEGE! Beugrottal a WC lefolyoba!</p>' +
-            '<button class="gomb" onclick="ujJatek()">Uj Jatek</button>';
+            '<p class="vege">VÉGE! Beugroltál a WC lefolyóba!</p>' +
+            '<button class="gomb" onclick="ujJatek()">Új Játék</button>';
         }
 
         function tovabbMegy() {
@@ -351,102 +352,102 @@ app.get('/tengerimalac-jatek', async (req, res) => {
         function kert() {
           document.getElementById('jatek-tartalom').innerHTML = 
             '<p>A kertben vagy. Mit teszel?</p>' +
-            '<button class="gomb" onclick="utca()">Kimegyek az utcara</button>' +
-            '<button class="gomb" onclick="kerites()">Megyek a keriteshez</button>' +
-            '<button class="gomb" onclick="valaszt(\\'vetemenyeshaz\\')">Megyek a vetemenyeshez</button>';
+            '<button class="gomb" onclick="utca()">Kimegyek az utcára</button>' +
+            '<button class="gomb" onclick="kerites()">Megyek a kerítéshez</button>' +
+            '<button class="gomb" onclick="valaszt(\\'vetemenyeshaz\\')">Megyek a veteményeshez</button>';
         }
 
         function utca() {
           document.getElementById('jatek-tartalom').innerHTML = 
-            '<p class="vege">VEGE! Elutott az auto!</p>' +
-            '<button class="gomb" onclick="ujJatek()">Uj Jatek</button>';
+            '<p class="vege">VÉGE! Elütött az autó!</p>' +
+            '<button class="gomb" onclick="ujJatek()">Új Játék</button>';
         }
 
         function kerites() {
           document.getElementById('jatek-tartalom').innerHTML = 
-            '<p class="vege">VEGE! A kutya megharapott!</p>' +
-            '<button class="gomb" onclick="ujJatek()">Uj Jatek</button>';
+            '<p class="vege">VÉGE! A kutya megharapott!</p>' +
+            '<button class="gomb" onclick="ujJatek()">Új Játék</button>';
         }
 
         function vetemenyeshaz() {
           document.getElementById('jatek-tartalom').innerHTML = 
-            '<p>A vetemenyesnel vagy. Latsz egy hintat.</p>' +
-            '<button class="gomb" onclick="hinta()">Felszallok a hintara</button>' +
-            '<button class="gomb" onclick="tovabbMegyFugebokur()">Tovabb megyek</button>';
+            '<p>A veteményesnél vagy. Látsz egy hintát.</p>' +
+            '<button class="gomb" onclick="hinta()">Felszállok a hintára</button>' +
+            '<button class="gomb" onclick="tovabbMegyFugebokur()">Tovább megyek</button>';
         }
 
         function hinta() {
           document.getElementById('jatek-tartalom').innerHTML = 
-            '<p class="vege">VEGE! Atrepultel a gazda kinai szomszedjához, ahol megettek!</p>' +
-            '<button class="gomb" onclick="ujJatek()">Uj Jatek</button>';
+            '<p class="vege">VÉGE! Átrepültél a gazda kínai szomszédjához, ahol megettek!</p>' +
+            '<button class="gomb" onclick="ujJatek()">Új Játék</button>';
         }
 
         async function tovabbMegyFugebokur() {
-          await mentFinish('Finom Fuge');
+          await mentFinish('Finom Füge');
           document.getElementById('jatek-tartalom').innerHTML = 
-            '<p class="gratula">GRATULALUNK! Megtalaltad a fugebokrot es megetted az osszes fuget!</p>' +
-            '<p>Feloldottad a finisht: <strong>Finom Fuge</strong></p>' +
-            '<button class="gomb" onclick="ujJatek()">Uj Jatek</button>';
+            '<p class="gratula">GRATULÁLUNK! Megtaláltad a fügebokrot és megetted az összes fügét!</p>' +
+            '<p>Feloldottad a finisht: <strong>Finom Füge</strong></p>' +
+            '<button class="gomb" onclick="ujJatek()">Új Játék</button>';
         }
 
         function nappali() {
           document.getElementById('jatek-tartalom').innerHTML = 
-            '<p>A nappaliban talalkozol a Jatek Manoval.</p>' +
-            '<button class="gomb" onclick="leutJatekMano()">Leutod mert felsz tole</button>' +
+            '<p>A nappaliban találkozol a Játék Manóval.</p>' +
+            '<button class="gomb" onclick="leutJatekMano()">Leüt mert félek tőle</button>' +
             '<button class="gomb" onclick="meghallgatJatekMano()">Meghallgatom</button>';
         }
 
         function leutJatekMano() {
           document.getElementById('jatek-tartalom').innerHTML = 
-            '<p class="vege">VEGE! Leutotted Jatek Manot ezert elvarazsolt!</p>' +
-            '<button class="gomb" onclick="ujJatek()">Uj Jatek</button>';
+            '<p class="vege">VÉGE! Leütötted Játék Manót ezért elvarázsolt!</p>' +
+            '<button class="gomb" onclick="ujJatek()">Új Játék</button>';
         }
 
         function meghallgatJatekMano() {
           document.getElementById('jatek-tartalom').innerHTML = 
-            '<p>A Jatek Mano mutat egy titkos atjarot. Atmesz rajta es eljutsz a kinaiakhoz.</p>' +
-            '<button class="gomb" onclick="valaszt(\\'kinai\\')">Tovabb</button>';
+            '<p>A Játék Manó mutat egy titkos átjárót. Átmész rajta és eljutsz a kínaiakhoz.</p>' +
+            '<button class="gomb" onclick="valaszt(\\'kinai\\')">Tovább</button>';
         }
 
         function kinai() {
           document.getElementById('jatek-tartalom').innerHTML = 
-            '<p class="vege">VEGE! A kinai szomszedoknal vagy, es megettek teged!</p>' +
-            '<button class="gomb" onclick="ujJatek()">Uj Jatek</button>';
+            '<p class="vege">VÉGE! A kínai szomszédoknál vagy, és megettek téged!</p>' +
+            '<button class="gomb" onclick="ujJatek()">Új Játék</button>';
         }
 
         function rozsaszinSzoba() {
           document.getElementById('jatek-tartalom').innerHTML = 
-            '<p>A rozsaszin szobaban vagy. Van egy jatekrepulo.</p>' +
-            '<button class="gomb" onclick="valaszt(\\'buszallomas\\')">Elmegyek a jatekrepulon a buszallomasra</button>';
+            '<p>A rózsaszín szobában vagy. Van egy játékrepülő.</p>' +
+            '<button class="gomb" onclick="valaszt(\\'buszallomas\\')">Elmegyek a játékrepülőn a buszállomásra</button>';
         }
 
         function buszallomas() {
           document.getElementById('jatek-tartalom').innerHTML = 
-            '<p>A buszallomason vagy.</p>' +
-            '<button class="gomb" onclick="valaszt(\\'repuloter\\')">Elmegyek a repuloterre</button>';
+            '<p>A buszállomáson vagy.</p>' +
+            '<button class="gomb" onclick="valaszt(\\'repuloter\\')">Elmegyek a repülőtérre</button>';
         }
 
         function repuloter() {
           document.getElementById('jatek-tartalom').innerHTML = 
-            '<p>A repuloteren vagy. Hova utazol?</p>' +
-            '<button class="gomb" onclick="papuaUjGuinea()">Papua-Uj Guinea</button>' +
-            '<button class="gomb" onclick="magyarorszag()">Magyarorszag</button>';
+            '<p>A repülőtéren vagy. Hova utazol?</p>' +
+            '<button class="gomb" onclick="papuaUjGuinea()">Pápua-Új Guinea</button>' +
+            '<button class="gomb" onclick="magyarorszag()">Magyarország</button>';
         }
 
         async function papuaUjGuinea() {
-          await mentFinish('Guinea a Guineaban');
+          await mentFinish('Guinea a Guineában');
           document.getElementById('jatek-tartalom').innerHTML = 
-            '<p class="gratula">GRATULALUNK! Guineakent elmentel Guineaba!</p>' +
-            '<p>Feloldottad a finisht: <strong>Guinea a Guineaban</strong></p>' +
-            '<button class="gomb" onclick="ujJatek()">Uj Jatek</button>';
+            '<p class="gratula">GRATULÁLUNK! Guineaként elmentél Guineába!</p>' +
+            '<p>Feloldottad a finisht: <strong>Guinea a Guineában</strong></p>' +
+            '<button class="gomb" onclick="ujJatek()">Új Játék</button>';
         }
 
         async function magyarorszag() {
-          await mentFinish('minek pazaroltál erre egymilliot?');
+          await mentFinish('minek pazaroltál erre egymilliót?');
           document.getElementById('jatek-tartalom').innerHTML = 
-            '<p class="gratula">GRATULALUNK! Mondjuk ide autoval is el tudtal volna jonni...</p>' +
-            '<p>Feloldottad a finisht: <strong>minek pazaroltál erre egymilliot?</strong></p>' +
-            '<button class="gomb" onclick="ujJatek()">Uj Jatek</button>';
+            '<p class="gratula">GRATULÁLUNK! Mondjuk ide autóval is el tudtál volna jönni...</p>' +
+            '<p>Feloldottad a finisht: <strong>minek pazaroltál erre egymilliót?</strong></p>' +
+            '<button class="gomb" onclick="ujJatek()">Új Játék</button>';
         }
 
         async function mentFinish(finishNev) {
@@ -458,10 +459,10 @@ app.get('/tengerimalac-jatek', async (req, res) => {
             });
             const data = await response.json();
             if (data.ujPont) {
-              alert('🎉 UJ GYOZELEM PONT! Osszes pont: ' + data.gyozelemPontok + '/10');
+              alert('🎉 ÚJ GYŐZELEM PONT! Összes pont: ' + data.gyozelemPontok + '/10');
             }
           } catch (error) {
-            console.error('Mentes hiba:', error);
+            console.error('Mentés hiba:', error);
           }
         }
 
@@ -473,7 +474,7 @@ app.get('/tengerimalac-jatek', async (req, res) => {
     
     res.send(html);
   } catch (error) {
-    res.send(getMenu() + '<p>Hiba tortent!</p>');
+    res.send(getMenu() + '<p>Hiba történt!</p>');
   }
 });
 
@@ -499,385 +500,4 @@ app.get('/tetris', (req, res) => {
     <style>
       body { font-family: Arial; background: #1a1a2e; color: white; text-align: center; }
       #tetris-canvas { border: 3px solid #fff; background: #0f0f1e; margin: 20px auto; display: block; }
-      .pontszam { font-size: 24px; margin: 10px; }
-    </style>
-    <h1>🟦 TETRIS</h1>
-    <div class="pontszam">Pontszám: <span id="score">0</span></div>
-    <canvas id="tetris-canvas" width="300" height="600"></canvas>
-    <p>Irányítás: ← → Mozgás | ↑ Forgatás | ↓ Gyorsítás | Space Ledobás</p>
-    <script>
-      const canvas = document.getElementById('tetris-canvas');
-      const ctx = canvas.getContext('2d');
-      const ROWS = 20, COLS = 10, BLOCK = 30;
-      let board = Array(ROWS).fill().map(() => Array(COLS).fill(0));
-      let score = 0;
-      let currentPiece, currentX, currentY;
-      let gameOver = false;
-      let dropCounter = 0;
-      let dropInterval = 1000;
-      let lastTime = 0;
-
-      const PIECES = [
-        [[1,1,1,1]], // I
-        [[1,1],[1,1]], // O
-        [[0,1,0],[1,1,1]], // T
-        [[1,0,0],[1,1,1]], // L
-        [[0,0,1],[1,1,1]], // J
-        [[0,1,1],[1,1,0]], // S
-        [[1,1,0],[0,1,1]]  // Z
-      ];
-      const COLORS = ['#00f0f0','#f0f000','#a000f0','#f0a000','#0000f0','#00f000','#f00000'];
-
-      function newPiece() {
-        const idx = Math.floor(Math.random() * PIECES.length);
-        currentPiece = PIECES[idx].map(row => [...row]);
-        currentX = Math.floor(COLS / 2) - Math.floor(currentPiece[0].length / 2);
-        currentY = 0;
-        if (collision()) { gameOver = true; alert('Game Over! Pontszám: ' + score); location.reload(); }
-      }
-
-      function collision() {
-        for (let y = 0; y < currentPiece.length; y++) {
-          for (let x = 0; x < currentPiece[y].length; x++) {
-            if (currentPiece[y][x] && (board[currentY + y] && board[currentY + y][currentX + x]) !== 0) return true;
-            if (currentPiece[y][x] && (currentY + y >= ROWS || currentX + x < 0 || currentX + x >= COLS)) return true;
-          }
-        }
-        return false;
-      }
-
-      function merge() {
-        for (let y = 0; y < currentPiece.length; y++) {
-          for (let x = 0; x < currentPiece[y].length; x++) {
-            if (currentPiece[y][x]) board[currentY + y][currentX + x] = 1;
-          }
-        }
-      }
-
-      function rotate() {
-        const rotated = currentPiece[0].map((_, i) => currentPiece.map(row => row[i]).reverse());
-        const prev = currentPiece;
-        currentPiece = rotated;
-        if (collision()) currentPiece = prev;
-      }
-
-      function clearLines() {
-        outer: for (let y = ROWS - 1; y >= 0; y--) {
-          for (let x = 0; x < COLS; x++) {
-            if (board[y][x] === 0) continue outer;
-          }
-          board.splice(y, 1);
-          board.unshift(Array(COLS).fill(0));
-          score += 100;
-          document.getElementById('score').textContent = score;
-          y++;
-        }
-      }
-
-      function drop() {
-        currentY++;
-        if (collision()) {
-          currentY--;
-          merge();
-          clearLines();
-          newPiece();
-        }
-        dropCounter = 0;
-      }
-
-      function hardDrop() {
-        while (!collision()) currentY++;
-        currentY--;
-        merge();
-        clearLines();
-        newPiece();
-      }
-
-      function draw() {
-        ctx.fillStyle = '#0f0f1e';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
-        for (let y = 0; y < ROWS; y++) {
-          for (let x = 0; x < COLS; x++) {
-            if (board[y][x]) {
-              ctx.fillStyle = '#666';
-              ctx.fillRect(x * BLOCK, y * BLOCK, BLOCK, BLOCK);
-              ctx.strokeStyle = '#000';
-              ctx.strokeRect(x * BLOCK, y * BLOCK, BLOCK, BLOCK);
-            }
-          }
-        }
-
-        for (let y = 0; y < currentPiece.length; y++) {
-          for (let x = 0; x < currentPiece[y].length; x++) {
-            if (currentPiece[y][x]) {
-              ctx.fillStyle = '#f0f';
-              ctx.fillRect((currentX + x) * BLOCK, (currentY + y) * BLOCK, BLOCK, BLOCK);
-              ctx.strokeStyle = '#000';
-              ctx.strokeRect((currentX + x) * BLOCK, (currentY + y) * BLOCK, BLOCK, BLOCK);
-            }
-          }
-        }
-      }
-
-      function update(time = 0) {
-        const deltaTime = time - lastTime;
-        lastTime = time;
-        dropCounter += deltaTime;
-        if (dropCounter > dropInterval) drop();
-        draw();
-        if (!gameOver) requestAnimationFrame(update);
-      }
-
-      document.addEventListener('keydown', e => {
-        if (e.key === 'ArrowLeft') { currentX--; if (collision()) currentX++; }
-        if (e.key === 'ArrowRight') { currentX++; if (collision()) currentX--; }
-        if (e.key === 'ArrowDown') drop();
-        if (e.key === 'ArrowUp') rotate();
-        if (e.key === ' ') { e.preventDefault(); hardDrop(); }
-      });
-
-      newPiece();
-      update();
-    </script>
-  `;
-  res.send(html);
-});
-
-// SNAKE JÁTÉK - JAVÍTOTT, NEM ÍR KI FOLYAMATOSAN GAME OVERT
-app.get('/snake', (req, res) => {
-  const html = `
-    ${getMenu()}
-    <style>
-      body { font-family: Arial; background: #1a1a1a; color: white; text-align: center; }
-      #snake-canvas { border: 3px solid #4ECDC4; background: #0a0a0a; margin: 20px auto; display: block; }
-      .pontszam { font-size: 24px; margin: 10px; }
-    </style>
-    <h1>🐍 SNAKE</h1>
-    <div class="pontszam">Pontszám: <span id="score">0</span></div>
-    <canvas id="snake-canvas" width="400" height="400"></canvas>
-    <p>Irányítás: ← → ↑ ↓ vagy W A S D</p>
-    <script>
-      const canvas = document.getElementById('snake-canvas');
-      const ctx = canvas.getContext('2d');
-      const GRID = 20;
-      let snake = [{x: 10, y: 10}];
-      let food = {x: 15, y: 15};
-      let dx = 0, dy = 0;
-      let score = 0;
-      let gameRunning = true;
-      let gameOverShown = false;
-
-      function randomFood() {
-        food = {
-          x: Math.floor(Math.random() * (canvas.width / GRID)),
-          y: Math.floor(Math.random() * (canvas.height / GRID))
-        };
-      }
-
-      function draw() {
-        ctx.fillStyle = '#0a0a0a';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
-        ctx.fillStyle = '#4ECDC4';
-        snake.forEach((segment, i) => {
-          ctx.fillRect(segment.x * GRID, segment.y * GRID, GRID - 2, GRID - 2);
-        });
-        
-        ctx.fillStyle = '#FF6B6B';
-        ctx.fillRect(food.x * GRID, food.y * GRID, GRID - 2, GRID - 2);
-      }
-
-      function update() {
-        if (!gameRunning) return;
-        
-        if (dx === 0 && dy === 0) return;
-        
-        const head = {x: snake[0].x + dx, y: snake[0].y + dy};
-        
-        if (head.x < 0 || head.x >= canvas.width / GRID || 
-            head.y < 0 || head.y >= canvas.height / GRID ||
-            snake.some(s => s.x === head.x && s.y === head.y)) {
-          gameRunning = false;
-          if (!gameOverShown) {
-            gameOverShown = true;
-            alert('Game Over! Pontszám: ' + score);
-            location.reload();
-          }
-          return;
-        }
-        
-        snake.unshift(head);
-        
-        if (head.x === food.x && head.y === food.y) {
-          score += 10;
-          document.getElementById('score').textContent = score;
-          randomFood();
-        } else {
-          snake.pop();
-        }
-        
-        draw();
-      }
-
-      document.addEventListener('keydown', e => {
-        if ((e.key === 'ArrowLeft' || e.key === 'a') && dx === 0) { dx = -1; dy = 0; }
-        if ((e.key === 'ArrowRight' || e.key === 'd') && dx === 0) { dx = 1; dy = 0; }
-        if ((e.key === 'ArrowUp' || e.key === 'w') && dy === 0) { dx = 0; dy = -1; }
-        if ((e.key === 'ArrowDown' || e.key === 's') && dy === 0) { dx = 0; dy = 1; }
-      });
-
-      draw();
-      setInterval(update, 100);
-    </script>
-  `;
-  res.send(html);
-});
-
-// LABIRINTUS JÁTÉK
-app.get('/labirintus', (req, res) => {
-  const html = `
-    ${getMenu()}
-    <style>
-      body { font-family: Arial; background: #2c3e50; color: white; text-align: center; }
-      #maze-canvas { border: 3px solid #FFD93D; background: #1a1a1a; margin: 20px auto; display: block; }
-      .info { font-size: 20px; margin: 10px; }
-    </style>
-    <h1>🎯 LABIRINTUS</h1>
-    <div class="info">Szint: <span id="level">1</span> | Lépések: <span id="steps">0</span></div>
-    <canvas id="maze-canvas" width="500" height="500"></canvas>
-    <p>Irányítás: ← → ↑ ↓ vagy W A S D | Cél: Érj a piros célhoz! 🎯</p>
-    <script>
-      const canvas = document.getElementById('maze-canvas');
-      const ctx = canvas.getContext('2d');
-      const SIZE = 25;
-      let level = 1;
-      let steps = 0;
-      let playerX = 1, playerY = 1;
-      let maze = [];
-
-      function generateMaze(w, h) {
-        const m = Array(h).fill().map(() => Array(w).fill(1));
-        
-        function carve(x, y) {
-          const dirs = [[0,-2],[2,0],[0,2],[-2,0]].sort(() => Math.random() - 0.5);
-          for (let [dx, dy] of dirs) {
-            const nx = x + dx, ny = y + dy;
-            if (nx > 0 && nx < w - 1 && ny > 0 && ny < h - 1 && m[ny][nx] === 1) {
-              m[y + dy/2][x + dx/2] = 0;
-              m[ny][nx] = 0;
-              carve(nx, ny);
-            }
-          }
-        }
-        
-        m[1][1] = 0;
-        carve(1, 1);
-        m[h-2][w-2] = 2;
-        return m;
-      }
-
-      function newLevel() {
-        const size = Math.min(15 + level * 2, 19);
-        maze = generateMaze(size, size);
-        playerX = 1;
-        playerY = 1;
-        steps = 0;
-        document.getElementById('level').textContent = level;
-        document.getElementById('steps').textContent = steps;
-      }
-
-      function draw() {
-        ctx.fillStyle = '#1a1a1a';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
-        for (let y = 0; y < maze.length; y++) {
-          for (let x = 0; x < maze[y].length; x++) {
-            if (maze[y][x] === 1) {
-              ctx.fillStyle = '#34495e';
-              ctx.fillRect(x * SIZE, y * SIZE, SIZE, SIZE);
-            } else if (maze[y][x] === 2) {
-              ctx.fillStyle = '#e74c3c';
-              ctx.fillRect(x * SIZE, y * SIZE, SIZE, SIZE);
-            }
-          }
-        }
-        
-        ctx.fillStyle = '#3498db';
-        ctx.beginPath();
-        ctx.arc(playerX * SIZE + SIZE/2, playerY * SIZE + SIZE/2, SIZE/2 - 2, 0, Math.PI * 2);
-        ctx.fill();
-      }
-
-      function move(dx, dy) {
-        const newX = playerX + dx;
-        const newY = playerY + dy;
-        
-        if (newY >= 0 && newY < maze.length && newX >= 0 && newX < maze[0].length && maze[newY][newX] !== 1) {
-          playerX = newX;
-          playerY = newY;
-          steps++;
-          document.getElementById('steps').textContent = steps;
-          
-          if (maze[playerY][playerX] === 2) {
-            level++;
-            alert('Gratulálok! Szint ' + level + ' teljesítve! Lépések: ' + steps);
-            newLevel();
-          }
-          
-          draw();
-        }
-      }
-
-      document.addEventListener('keydown', e => {
-        if (e.key === 'ArrowLeft' || e.key === 'a') move(-1, 0);
-        if (e.key === 'ArrowRight' || e.key === 'd') move(1, 0);
-        if (e.key === 'ArrowUp' || e.key === 'w') move(0, -1);
-        if (e.key === 'ArrowDown' || e.key === 's') move(0, 1);
-      });
-
-      newLevel();
-      draw();
-    </script>
-  `;
-  res.send(html);
-});
-
-app.post('/jatek-mentes', async (req, res) => {
-  try {
-    const { sessionId, finishNev } = req.body;
-    let allapot = await jatekAllapotCollection.findOne({ sessionId });
-    
-    if (!allapot) {
-      allapot = { sessionId, finishek: [], gyozelemPontok: 0, jatekosNev: '' };
-    }
-    
-    let ujPont = false;
-    if (!allapot.finishek.includes(finishNev)) {
-      allapot.finishek.push(finishNev);
-      
-      const osszesFinish = ['Auchanos malackaja', 'Finom Fuge', 'Guinea a Guineaban', 'minek pazaroltál erre egymilliot?'];
-      const mindMegvan = osszesFinish.every(f => allapot.finishek.includes(f));
-      
-      if (mindMegvan && allapot.gyozelemPontok < 10) {
-        allapot.gyozelemPontok += 1;
-        allapot.finishek = [];
-        ujPont = true;
-      }
-      
-      await jatekAllapotCollection.updateOne(
-        { sessionId },
-        { $set: allapot },
-        { upsert: true }
-      );
-    }
-    
-    res.json({ sikeres: true, ujPont, gyozelemPontok: allapot.gyozelemPontok });
-  } catch (error) {
-    res.json({ sikeres: false });
-  }
-});
-
-app.listen(port, () => {
-  console.log('Az oldal fut: http://localhost:3000');
-});
+      .pontszam { font-size: 24px;
