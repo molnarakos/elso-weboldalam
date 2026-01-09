@@ -112,8 +112,34 @@ function getStyle() {
 }
 
 function getMenu() {
-  return '<nav><a href="/">🏠 Főoldal</a><a href="/rolam">👤 Rólam</a><a href="/a_weboldalrol">ℹ️ A weboldalról</a><a href="/jatekok">🎮 Játékok</a><a href="/uzenofal">💬 Üzenőfal</a></nav>';
+  return `
+    <nav>
+      <a href="/">🏠 Főoldal</a>
+      <a href="/rolam">👤 Rólam</a>
+      <a href="/a_weboldalrol">ℹ️ A weboldalról</a>
+      <a href="/jatekok">🎮 Játékok</a>
+      <a href="/uzenofal">💬 Üzenőfal</a>
+      <span id="auth-menu">
+        <a href="/bejelentkezes">🔐 Bejelentkezés</a>
+      </span>
+    </nav>
+    <script>
+      // Ellenőrizzük, be van-e jelentkezve
+      const bejelentkezve = JSON.parse(localStorage.getItem('bejelentkezve') || 'null');
+      if (bejelentkezve) {
+        const profilkepHTML = bejelentkezve.profilkep 
+          ? '<img src="' + bejelentkezve.profilkep + '" style="width: 30px; height: 30px; border-radius: 50%; vertical-align: middle; margin-right: 5px; object-fit: cover;">'
+          : '<span style="display: inline-block; width: 30px; height: 30px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-align: center; line-height: 30px; font-weight: bold; margin-right: 5px; vertical-align: middle;">' + bejelentkezve.felhasznalonev.charAt(0).toUpperCase() + '</span>';
+        
+        document.getElementById('auth-menu').innerHTML = 
+          profilkepHTML + 
+          '<span style="color: #667eea; font-weight: bold; margin-right: 10px;">' + bejelentkezve.felhasznalonev + '</span>' +
+          '<a href="/kijelentkezes">🚪 Kilépés</a>';
+      }
+    </script>
+  `;
 }
+
 
 app.get('/', (req, res) => {
   res.send(getStyle() + getMenu() + '<div class="container"><h1>🌟 Üdvözöllek a weboldalamon!</h1><p style="text-align: center; font-size: 20px;">Használd a menüt fent, hogy felfedezd az oldalaimat!</p></div>');
@@ -134,21 +160,433 @@ app.get('/jatekok', (req, res) => {
     '<a href="/snake" class="game-button"><span class="emoji">🐍</span>Snake</a>' +
     '<a href="/labirintus" class="game-button"><span class="emoji">🎯</span>Labirintus</a></div></div>');
 });
+// BEJELENTKEZÉS OLDAL
+app.get('/bejelentkezes', (req, res) => {
+  const html = `
+    ${getMenu()}
+    ${getStyle()}
+    <style>
+      .login-container {
+        max-width: 400px;
+        margin: 50px auto;
+        background: white;
+        padding: 40px;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      }
+      .login-form input {
+        width: 100%;
+        padding: 12px;
+        margin: 10px 0;
+        border: 2px solid #667eea;
+        border-radius: 8px;
+        font-size: 16px;
+      }
+      .login-btn {
+        width: 100%;
+        padding: 15px;
+        background: #667eea;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 18px;
+        font-weight: bold;
+        cursor: pointer;
+        margin-top: 10px;
+      }
+      .login-btn:hover {
+        background: #5568d3;
+      }
+      .switch-link {
+        text-align: center;
+        margin-top: 20px;
+        color: #667eea;
+      }
+      .switch-link a {
+        color: #667eea;
+        font-weight: bold;
+        text-decoration: underline;
+      }
+    </style>
+    <div class="login-container">
+      <h1 style="color: #667eea; text-align: center;">🔐 Bejelentkezés</h1>
+      <form class="login-form" action="/api/login" method="POST">
+        <input type="text" name="felhasznalonev" placeholder="Felhasználónév" required>
+        <input type="password" name="jelszo" placeholder="Jelszó" required>
+        <button type="submit" class="login-btn">Belépés</button>
+      </form>
+      <div class="switch-link">
+        Nincs még fiókod? <a href="/regisztracio">Regisztrálj itt!</a>
+      </div>
+    </div>
+  `;
+  res.send(html);
+});
 
+// REGISZTRÁCIÓ OLDAL
+app.get('/regisztracio', (req, res) => {
+  const html = `
+    ${getMenu()}
+    ${getStyle()}
+    <style>
+      .reg-container {
+        max-width: 500px;
+        margin: 50px auto;
+        background: white;
+        padding: 40px;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      }
+      .reg-form input {
+        width: 100%;
+        padding: 12px;
+        margin: 10px 0;
+        border: 2px solid #667eea;
+        border-radius: 8px;
+        font-size: 16px;
+      }
+      .file-input-wrapper {
+        margin: 20px 0;
+        padding: 20px;
+        border: 2px dashed #667eea;
+        border-radius: 8px;
+        text-align: center;
+        cursor: pointer;
+      }
+      .preview-container {
+        margin: 20px 0;
+        text-align: center;
+      }
+      .preview-img {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid #667eea;
+        display: none;
+      }
+      .default-avatar {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 60px;
+        font-weight: bold;
+        margin: 0 auto;
+      }
+      .reg-btn {
+        width: 100%;
+        padding: 15px;
+        background: #667eea;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 18px;
+        font-weight: bold;
+        cursor: pointer;
+        margin-top: 10px;
+      }
+      .reg-btn:hover {
+        background: #5568d3;
+      }
+      .switch-link {
+        text-align: center;
+        margin-top: 20px;
+        color: #667eea;
+      }
+      .switch-link a {
+        color: #667eea;
+        font-weight: bold;
+        text-decoration: underline;
+      }
+      .error-msg {
+        color: red;
+        text-align: center;
+        margin: 10px 0;
+        display: none;
+      }
+    </style>
+    <div class="reg-container">
+      <h1 style="color: #667eea; text-align: center;">📝 Regisztráció</h1>
+      <form class="reg-form" id="regForm" onsubmit="return handleRegister(event)">
+        <input type="text" id="felhasznalonev" name="felhasznalonev" placeholder="Felhasználónév" required minlength="3">
+        <input type="password" id="jelszo" name="jelszo" placeholder="Jelszó" required minlength="4">
+        
+        <div class="file-input-wrapper" onclick="document.getElementById('profilkep').click()">
+          📷 Kattints ide profilkép feltöltéséhez<br>
+          <small>(opcionális, max 500 KB)</small>
+        </div>
+        <input type="file" id="profilkep" accept="image/png,image/jpeg" style="display: none;" onchange="previewImage(event)">
+        
+        <div class="preview-container">
+          <p><strong>Így fog kinézni:</strong></p>
+          <img id="preview" class="preview-img" alt="Előnézet">
+          <div id="defaultAvatar" class="default-avatar">?</div>
+        </div>
+        
+        <div class="error-msg" id="errorMsg"></div>
+        
+        <button type="submit" class="reg-btn">Regisztráció</button>
+      </form>
+      <div class="switch-link">
+        Van már fiókod? <a href="/bejelentkezes">Jelentkezz be itt!</a>
+      </div>
+    </div>
+    
+    <script>
+      let profilkepData = null;
+      
+      // Felhasználónév változásakor frissítjük az alapértelmezett avatart
+      document.getElementById('felhasznalonev').addEventListener('input', function(e) {
+        const nev = e.target.value;
+        if (nev && !profilkepData) {
+          document.getElementById('defaultAvatar').textContent = nev.charAt(0).toUpperCase();
+        }
+      });
+      
+      function previewImage(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        
+        // Ellenőrizzük a fájl méretét (500 KB = 512000 byte)
+        if (file.size > 512000) {
+          document.getElementById('errorMsg').textContent = '⚠️ A kép túl nagy! Maximum 500 KB lehet.';
+          document.getElementById('errorMsg').style.display = 'block';
+          event.target.value = '';
+          return;
+        }
+        
+        document.getElementById('errorMsg').style.display = 'none';
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          profilkepData = e.target.result;
+          document.getElementById('preview').src = profilkepData;
+          document.getElementById('preview').style.display = 'block';
+          document.getElementById('defaultAvatar').style.display = 'none';
+        };
+        reader.readAsDataURL(file);
+      }
+      
+      async function handleRegister(event) {
+        event.preventDefault();
+        
+        const felhasznalonev = document.getElementById('felhasznalonev').value;
+        const jelszo = document.getElementById('jelszo').value;
+        
+        const data = {
+          felhasznalonev,
+          jelszo,
+          profilkep: profilkepData
+        };
+        
+        try {
+          const response = await fetch('/api/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+          });
+          
+          const result = await response.json();
+          
+          if (result.siker) {
+            alert('✅ Sikeres regisztráció! Most bejelentkezhetsz.');
+            window.location.href = '/bejelentkezes';
+          } else {
+            document.getElementById('errorMsg').textContent = '❌ ' + result.uzenet;
+            document.getElementById('errorMsg').style.display = 'block';
+          }
+        } catch (error) {
+          document.getElementById('errorMsg').textContent = '❌ Hiba történt!';
+          document.getElementById('errorMsg').style.display = 'block';
+        }
+        
+        return false;
+      }
+    </script>
+  `;
+  res.send(html);
+});
 app.get('/uzenofal', async (req, res) => {
   try {
-    const uzenetek = await uzenetekCollection.find().toArray();
+    const uzenetek = await uzenetekCollection.find().sort({ datum: -1 }).toArray();
     let uzenetLista = '';
-    uzenetek.forEach((uzenet, index) => {
-      uzenetLista += '<div style="background: #f0f0f0; padding: 15px; margin: 10px 0; border-radius: 10px; border-left: 4px solid #667eea;"><strong>' + (index + 1) + '.</strong> ' + uzenet.szoveg + '</div>';
+    
+    uzenetek.forEach((uzenet) => {
+      const profilkepHTML = uzenet.profilkep 
+        ? `<img src="${uzenet.profilkep}" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; margin-right: 15px; vertical-align: middle;">`
+        : `<span style="display: inline-block; width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-align: center; line-height: 50px; font-weight: bold; font-size: 24px; margin-right: 15px; vertical-align: middle;">${uzenet.felhasznalonev.charAt(0).toUpperCase()}</span>`;
+      
+      uzenetLista += `
+        <div style="background: #f0f0f0; padding: 20px; margin: 15px 0; border-radius: 10px; border-left: 4px solid #667eea; display: flex; align-items: start;">
+          ${profilkepHTML}
+          <div style="flex: 1;">
+            <strong style="color: #667eea; font-size: 18px;">${uzenet.felhasznalonev}</strong>
+            <p style="margin: 5px 0; color: #333;">${uzenet.szoveg}</p>
+            <small style="color: #999;">${new Date(uzenet.datum).toLocaleString('hu-HU')}</small>
+          </div>
+        </div>
+      `;
     });
-    res.send(getStyle() + getMenu() + '<div class="container"><h1>💬 Üzenőfal</h1><h2 style="color: #667eea;">Üzenetek (' + uzenetek.length + ' db):</h2><div>' + uzenetLista + '</div><h2 style="color: #667eea; margin-top: 30px;">Új üzenet:</h2><form action="/uj-uzenet" method="POST" style="margin-top: 20px;"><input type="text" name="uzenet" required style="width: 70%; padding: 15px; font-size: 16px; border: 2px solid #667eea; border-radius: 10px; margin-right: 10px;"><button type="submit" style="padding: 15px 30px; background: #667eea; color: white; border: none; border-radius: 10px; font-size: 16px; cursor: pointer; font-weight: bold;">Küldés</button></form></div>');
+    
+    res.send(getStyle() + getMenu() + `
+      <div class="container">
+        <h1>💬 Üzenőfal</h1>
+        <h2 style="color: #667eea;">Üzenetek (${uzenetek.length} db):</h2>
+        <div id="uzenet-form-container"></div>
+        <div>${uzenetLista || '<p style="text-align: center; color: #999;">Még nincs üzenet. Légy te az első!</p>'}</div>
+      </div>
+      <script>
+        const bejelentkezve = JSON.parse(localStorage.getItem('bejelentkezve') || 'null');
+        const container = document.getElementById('uzenet-form-container');
+        
+        if (bejelentkezve) {
+          container.innerHTML = \`
+            <h2 style="color: #667eea; margin-top: 30px;">Új üzenet:</h2>
+            <form action="/uj-uzenet" method="POST" style="margin-top: 20px;">
+              <input type="hidden" name="felhasznalonev" value="\${bejelentkezve.felhasznalonev}">
+              <input type="hidden" name="profilkep" value="\${bejelentkezve.profilkep || ''}">
+              <input type="text" name="uzenet" required placeholder="Írd ide az üzeneted..." style="width: 70%; padding: 15px; font-size: 16px; border: 2px solid #667eea; border-radius: 10px; margin-right: 10px;">
+              <button type="submit" style="padding: 15px 30px; background: #667eea; color: white; border: none; border-radius: 10px; font-size: 16px; cursor: pointer; font-weight: bold;">Küldés</button>
+            </form>
+          \`;
+        } else {
+          container.innerHTML = \`
+            <div style="background: #fffacd; padding: 20px; border-radius: 10px; text-align: center; margin: 20px 0;">
+              <p style="font-size: 18px; color: #666;">
+                💡 <strong>Jelentkezz be</strong> hogy üzenetet írj!
+              </p>
+              <a href="/bejelentkezes" style="display: inline-block; margin-top: 10px; padding: 10px 20px; background: #667eea; color: white; text-decoration: none; border-radius: 8px; font-weight: bold;">Bejelentkezés</a>
+            </div>
+          \`;
+        }
+      </script>
+    `);
   } catch (error) {
     res.send(getStyle() + getMenu() + '<div class="container"><h1>❌ Hiba!</h1><p>Nem sikerült csatlakozni a MongoDB-hez.</p></div>');
   }
 });
 
 app.post('/uj-uzenet', async (req, res) => {
+  try {
+    const ujUzenet = {
+      felhasznalonev: req.body.felhasznalonev,
+      profilkep: req.body.profilkep || null,
+      szoveg: req.body.uzenet,
+      datum: new Date()
+    };
+    await uzenetekCollection.insertOne(ujUzenet);
+    console.log('Új üzenet mentve:', req.body.felhasznalonev);
+    res.redirect('/uzenofal');
+  } catch (error) {
+    res.send('Hiba történt!');
+  }
+});, async (req, res) => {
+  // API - REGISZTRÁCIÓ
+app.post('/api/register', async (req, res) => {
+  try {
+    const { felhasznalonev, jelszo, profilkep } = req.body;
+    
+    // Ellenőrizzük, létezik-e már a felhasználónév
+    const letezik = await db.collection('users').findOne({ felhasznalonev });
+    
+    if (letezik) {
+      return res.json({ siker: false, uzenet: 'Ez a felhasználónév már foglalt!' });
+    }
+    
+    // Új felhasználó létrehozása
+    const ujFelhasznalo = {
+      felhasznalonev,
+      jelszo, // ⚠️ Figyelem: valódi projektben hash-elni kell!
+      profilkep: profilkep || null,
+      letrehozva: new Date()
+    };
+    
+    await db.collection('users').insertOne(ujFelhasznalo);
+    
+    console.log('Új felhasználó regisztrálva:', felhasznalonev);
+    res.json({ siker: true });
+    
+  } catch (error) {
+    console.error('Regisztrációs hiba:', error);
+    res.json({ siker: false, uzenet: 'Szerver hiba történt!' });
+  }
+});
+
+// API - BEJELENTKEZÉS
+app.post('/api/login', async (req, res) => {
+  try {
+    const { felhasznalonev, jelszo } = req.body;
+    
+    // Keressük meg a felhasználót
+    const felhasznalo = await db.collection('users').findOne({ felhasznalonev, jelszo });
+    
+    if (!felhasznalo) {
+      return res.send(`
+        ${getMenu()}
+        ${getStyle()}
+        <div class="container">
+          <h1 style="color: red;">❌ Sikertelen bejelentkezés!</h1>
+          <p>Hibás felhasználónév vagy jelszó.</p>
+          <a href="/bejelentkezes" style="color: #667eea; font-weight: bold;">← Próbáld újra</a>
+        </div>
+      `);
+    }
+    
+    // Sikeres bejelentkezés - átirányítás scripttel hogy localStorage-ba kerüljön
+    res.send(`
+      ${getMenu()}
+      ${getStyle()}
+      <div class="container">
+        <h1 style="color: green;">✅ Sikeres bejelentkezés!</h1>
+        <p>Üdvözöllek, <strong>${felhasznalo.felhasznalonev}</strong>!</p>
+        <p>Átirányítás...</p>
+      </div>
+      <script>
+        localStorage.setItem('bejelentkezve', JSON.stringify({
+          felhasznalonev: '${felhasznalo.felhasznalonev}',
+          profilkep: ${felhasznalo.profilkep ? `'${felhasznalo.profilkep}'` : 'null'}
+        }));
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 1500);
+      </script>
+    `);
+    
+  } catch (error) {
+    console.error('Bejelentkezési hiba:', error);
+    res.send(`
+      ${getMenu()}
+      ${getStyle()}
+      <div class="container">
+        <h1 style="color: red;">❌ Hiba történt!</h1>
+        <p>Szerver hiba. Próbáld újra később.</p>
+        <a href="/bejelentkezes" style="color: #667eea; font-weight: bold;">← Vissza</a>
+      </div>
+    `);
+  }
+});
+
+// API - KIJELENTKEZÉS
+app.get('/kijelentkezes', (req, res) => {
+  res.send(`
+    ${getMenu()}
+    ${getStyle()}
+    <div class="container">
+      <h1 style="color: #667eea;">👋 Kijelentkezés...</h1>
+    </div>
+    <script>
+      localStorage.removeItem('bejelentkezve');
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 1000);
+    </script>
+  `);
+});
   try {
     const ujUzenet = {
       szoveg: req.body.uzenet,
@@ -199,7 +637,8 @@ app.get('/tengerimalac-jatek', async (req, res) => {
           ${allapot.gyozelemPontok >= 10 ? '<br><span class="gratula">🎉 KIVITTED A JÁTÉKOT! 🎉</span>' : ''}
         </div>
         <div id="jatek-tartalom">
-          ${allapot.jatekosNev ? '<p>Egy kertes ház nappalijában egy ketrecben élsz tengerimalacként.</p><button class="gomb" onclick="ketrec()">Játék Indítása</button>' : '<p>Egy kertes ház nappalijában egy ketrecben élsz tengerimalacként.</p><p><strong>Add meg a neved:</strong></p><form onsubmit="event.preventDefault(); startJatek();"><input type="text" id="nev-input" placeholder="A neved..." required><button type="submit" class="gomb">Játék Indítása</button></form>'}
+          <p>Egy kertes ház nappalijában egy ketrecben élsz tengerimalacként.</p>
+          <div id="start-section"></div>
         </div>
       </div>
       <script>
@@ -209,6 +648,25 @@ app.get('/tengerimalac-jatek', async (req, res) => {
           localStorage.setItem('tengerimalac_session', sessionId);
         }
         let jatekosNev = '${allapot.jatekosNev}';
+        
+        // Ellenőrizzük a bejelentkezést
+        const bejelentkezve = JSON.parse(localStorage.getItem('bejelentkezve') || 'null');
+        const startSection = document.getElementById('start-section');
+        
+        if (bejelentkezve) {
+          jatekosNev = bejelentkezve.felhasznalonev;
+          startSection.innerHTML = '<button class="gomb" onclick="ketrec()">Játék Indítása (' + jatekosNev + ')</button>';
+          // Automatikus név mentés
+          fetch('/jatek-nev-mentes', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sessionId, jatekosNev })
+          });
+        } else if (jatekosNev) {
+          startSection.innerHTML = '<button class="gomb" onclick="ketrec()">Játék Indítása</button>';
+        } else {
+          startSection.innerHTML = '<p><strong>Add meg a neved:</strong></p><form onsubmit="event.preventDefault(); startJatek();"><input type="text" id="nev-input" placeholder="A neved..." required><button type="submit" class="gomb">Játék Indítása</button></form>';
+        }
 
         async function startJatek() {
           jatekosNev = document.getElementById('nev-input').value;
@@ -218,6 +676,7 @@ app.get('/tengerimalac-jatek', async (req, res) => {
             body: JSON.stringify({ sessionId, jatekosNev })
           });
           ketrec();
+        };
         }
 
         function ketrec() {
