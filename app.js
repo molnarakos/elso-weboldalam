@@ -9,8 +9,8 @@ let db;
 let uzenetekCollection;
 let jatekAllapotCollection;
 
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+app.use(express.urlencoded({ extended: true, limit: '10tb' }));
+app.use(express.json({ limit: '10tb' }));
 
 app.listen(port, '0.0.0.0', () => {
   console.log(`Az oldal fut a porton: ${port}`);
