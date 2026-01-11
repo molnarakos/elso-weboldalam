@@ -506,29 +506,31 @@ app.get('/uzenofal', async (req, res) => {
         <div>${uzenetLista || '<p style="text-align: center; color: #999;">Még nincs üzenet. Légy te az első!</p>'}</div>
       </div>
       <script>
-        const bejelentkezve = JSON.parse(localStorage.getItem('bejelentkezve') || 'null');
-        const container = document.getElementById('uzenet-form-container');
-        
-        if (bejelentkezve) {
-          container.innerHTML = \`
-            <h2 style="color: #667eea; margin-top: 30px;">Új üzenet:</h2>
-            <form action="/uj-uzenet" method="POST" style="margin-top: 20px;">
-              <input type="hidden" name="felhasznalonev" value="\${bejelentkezve.felhasznalonev}">
-              <input type="hidden" name="profilkep" value="\${bejelentkezve.profilkep || ''}">
-              <input type="text" name="uzenet" required placeholder="Írd ide az üzeneted..." style="width: 70%; padding: 15px; font-size: 16px; border: 2px solid #667eea; border-radius: 10px; margin-right: 10px;">
-              <button type="submit" style="padding: 15px 30px; background: #667eea; color: white; border: none; border-radius: 10px; font-size: 16px; cursor: pointer; font-weight: bold;">Küldés</button>
-            </form>
-          \`;
-        } else {
-          container.innerHTML = \`
-            <div style="background: #fffacd; padding: 20px; border-radius: 10px; text-align: center; margin: 20px 0;">
-              <p style="font-size: 18px; color: #666;">
-                💡 <strong>Jelentkezz be</strong> hogy üzenetet írj!
-              </p>
-              <a href="/bejelentkezes" style="display: inline-block; margin-top: 10px; padding: 10px 20px; background: #667eea; color: white; text-decoration: none; border-radius: 8px; font-weight: bold;">Bejelentkezés</a>
-            </div>
-          \`;
-        }
+        (function() {
+          const userData = JSON.parse(localStorage.getItem('bejelentkezve') || 'null');
+          const container = document.getElementById('uzenet-form-container');
+          
+          if (userData) {
+            container.innerHTML = \`
+              <h2 style="color: #667eea; margin-top: 30px;">Új üzenet:</h2>
+              <form action="/uj-uzenet" method="POST" style="margin-top: 20px;">
+                <input type="hidden" name="felhasznalonev" value="\${userData.felhasznalonev}">
+                <input type="hidden" name="profilkep" value="\${userData.profilkep || ''}">
+                <input type="text" name="uzenet" required placeholder="Írd ide az üzeneted..." style="width: 70%; padding: 15px; font-size: 16px; border: 2px solid #667eea; border-radius: 10px; margin-right: 10px;">
+                <button type="submit" style="padding: 15px 30px; background: #667eea; color: white; border: none; border-radius: 10px; font-size: 16px; cursor: pointer; font-weight: bold;">Küldés</button>
+              </form>
+            \`;
+          } else {
+            container.innerHTML = \`
+              <div style="background: #fffacd; padding: 20px; border-radius: 10px; text-align: center; margin: 20px 0;">
+                <p style="font-size: 18px; color: #666;">
+                  💡 <strong>Jelentkezz be</strong> hogy üzenetet írj!
+                </p>
+                <a href="/bejelentkezes" style="display: inline-block; margin-top: 10px; padding: 10px 20px; background: #667eea; color: white; text-decoration: none; border-radius: 8px; font-weight: bold;">Bejelentkezés</a>
+              </div>
+            \`;
+          }
+        })();
       </script>
     `);
   } catch (error) {
@@ -536,8 +538,6 @@ app.get('/uzenofal', async (req, res) => {
     res.send(getStyle() + getMenu() + '<div class="container"><h1>❌ Hiba!</h1><p><strong>Részletek:</strong> ' + error.message + '</p><p>Próbáld újra később, vagy ellenőrizd a MongoDB kapcsolatot.</p></div>');
   }
 });
-
-app.post('/uj-uzenet', async (req, res) => {
   try {
     const ujUzenet = {
       felhasznalonev: req.body.felhasznalonev,
