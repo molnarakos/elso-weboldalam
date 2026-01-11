@@ -49,7 +49,7 @@ function getMenu() {
     <a href="/">🏠 Főoldal</a>
     <a href="/rolam">👤 Rólam</a>
     <a href="/a_weboldalrol">ℹ️ A weboldalról</a>
-    <a href="/jatekok">🎮 Játékok</a>
+    <a href="/jatekok">A játékok jelenleg NEM MŰKÖDNEK!!🎮</a>
     <a href="/uzenofal">💬 Üzenőfal</a>
     <span id="auth-menu"><a href="/bejelentkezes">🔐 Bejelentkezés</a></span>
   </nav>
