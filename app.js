@@ -77,7 +77,7 @@ app.get('/a_weboldalrol', (req, res) => {
 });
 
 app.get('/jatekok', (req, res) => {
-  res.send(getStyle() + getMenu() + '<div class="container"><h1>🎮 Játékok</h1><p style="text-align: center;">Válassz egy játékot!</p><div style="text-align: center; margin-top: 30px;">' +
+  res.send(getStyle() + getMenu() + '<div class="container"><h1>🎮 Játékok</h1><p style="text-align: center;">ÜZEMEN KIVŰL MINDEGYIK!</p><div style="text-align: center; margin-top: 30px;">' +
     '<a href="/tengerimalac-jatek" class="game-button"><span class="emoji">🐹</span>Tengerimalac Kaland</a>' +
     '<a href="/tetris" class="game-button"><span class="emoji">🟦</span>Tetris</a>' +
     '<a href="/snake" class="game-button"><span class="emoji">🐍</span>Snake</a>' +
